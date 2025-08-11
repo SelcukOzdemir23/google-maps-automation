@@ -1,0 +1,4 @@
+selenium>=4.9.0
+streamlit>=1.28.0
+pandas>=1.5.0
+pywhatkit>=5.4
