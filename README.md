@@ -1,63 +1,63 @@
-# Google Maps İşletme Kazıyıcı & WhatsApp Mesajlaşma
+# Google Maps Business Scraper & WhatsApp Messenger
 
-Google Maps'ten işletme bilgilerini kazıyan ve Türk cep telefonu numaralarına WhatsApp mesajı gönderen Streamlit uygulaması.
+A Streamlit application that scrapes business information from Google Maps and sends WhatsApp messages to Turkish mobile numbers.
 
-## Özellikler
+## Features
 
-- 🔍 Google Maps'ten işletme bilgilerini kazıma
-- 📊 CSV dosyalarını görüntüleme ve filtreleme
-- 📱 Türk cep telefonu numaralarına (05 ile başlayan) WhatsApp mesajı gönderme
-- 🇹🇷 Tamamen Türkçe arayüz
-- 📁 Otomatik CSV kaydetme
+- 🔍 Scrape business information from Google Maps
+- 📊 View and filter CSV files
+- 📱 Send WhatsApp messages to Turkish mobile numbers (starting with 05)
+- 🇹🇷 Turkish interface
+- 📁 Automatic CSV saving
 
-## Kurulum
+## Installation
 
-1. Gerekli paketleri yükleyin:
+1. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Uygulamayı çalıştırın:
+2. Run the application:
 ```bash
 streamlit run app.py
 ```
 
-## Kullanım
+## Usage
 
-### 1. WhatsApp Ayarları
-- Sol menüden telefon numaranızı girin (+90 ile başlayın)
+### 1. WhatsApp Settings
+- Enter your phone number in the sidebar (start with +90)
 
-### 2. CSV Seçme
-- Mevcut CSV dosyalarından birini seçin
-- Mesajınızı yazın
-- "Tüm İşletmelere Gönder" veya tek tek gönder
+### 2. CSV Selection
+- Select an existing CSV file
+- Write your message
+- Click "Send to All Businesses" or send individually
 
-### 3. Google Maps'ten Kazıma
-- Ülke ve arama türünü girin
-- Maksimum sonuç sayısını belirleyin
-- "Kazımaya Başla" butonuna tıklayın
+### 3. Google Maps Scraping
+- Enter country and search type
+- Set maximum results
+- Click "Start Scraping"
 
-## Önemli Notlar
+## Important Notes
 
-- ⚠️ Sadece **05 ile başlayan** Türk cep telefonu numaralarına mesaj gönderilebilir
-- 📞 Sabit hat numaraları (0242, 0338 vb.) desteklenmez
-- ⏱️ Mesajlar 2 dakika sonra gönderilmek üzere zamanlanır
-- 🔄 Toplu gönderimde mesajlar arası 2 saniye bekleme vardır
+- ⚠️ Only **Turkish mobile numbers starting with 05** can receive messages
+- 📞 Landline numbers (0242, 0338 etc.) are not supported
+- ⏱️ Messages are scheduled to be sent 2 minutes later
+- 🔄 2-second delay between messages in bulk sending
 
-## Dosya Yapısı
+## File Structure
 
 ```
 google-maps-automation/
-├── app.py                 # Ana Streamlit uygulaması
-├── wp_message_sender.py   # WhatsApp mesaj gönderme fonksiyonları
-├── scraper.py            # Google Maps kazıyıcı (opsiyonel)
-├── requirements.txt      # Gerekli paketler
-├── csv_files/           # CSV dosyaları klasörü
-└── README.md           # Bu dosya
+├── app.py                 # Main Streamlit application
+├── wp_message_sender.py   # WhatsApp messaging functions
+├── scraper.py            # Google Maps scraper (optional)
+├── requirements.txt      # Required packages
+├── csv_files/           # CSV files directory
+└── README.md           # This file
 ```
 
-## Gereksinimler
+## Requirements
 
 - Python 3.7+
-- Chrome/Chromium tarayıcı (scraping için)
-- WhatsApp Web erişimi
+- Chrome/Chromium browser (for scraping)
+- WhatsApp Web access
