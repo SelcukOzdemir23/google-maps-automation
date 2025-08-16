@@ -1,0 +1,57 @@
+#py gitignore
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+# Distribution / packaging
+.Python
+.egg
+.eggs/
+MANIFEST
+# Installer logs
+pip-log.txt
+# Unit
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Translations
+*.mo
+*.pot
+
+# PyInstaller
+#
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the executable.
+#  PyInstaller uses a hook to include these files.
+*.spec
+# Pytest
+.cache
+.pytest_cache/
+# mypy
+.mypy_cache/
+# Pyre type checker
+.pyre/
+.pyre
+# pytype
+.pytype/
+# Cython debug symbols
+cython_debug/
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+PyWhatKit_DB.txt

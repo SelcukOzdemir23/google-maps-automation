@@ -1,5 +1,4 @@
 import pywhatkit
-import datetime
 
 def is_valid_turkish_mobile(phone):
     """
@@ -37,16 +36,12 @@ def send_whatsapp_message(sender_phone, recipient_phone, message):
         # Format phone number for WhatsApp
         formatted_phone = format_turkish_mobile(recipient_phone)
         
-        # Get current time and add 2 minutes for scheduling
-        now = datetime.datetime.now()
-        send_time = now + datetime.timedelta(minutes=2)
-        
-        # Send message
-        pywhatkit.sendwhatmsg(
+        # Send message instantly
+        pywhatkit.sendwhatmsg_instantly(
             formatted_phone, 
-            message, 
-            send_time.hour, 
-            send_time.minute
+            message,
+            wait_time=10,
+            tab_close=True
         )
         return True
     except Exception as e:
