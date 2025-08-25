@@ -54,4 +54,16 @@ cython_debug/
 profile_default/
 ipython_config.py
 
-PyWhatKit_DB.txt
+.txt
+.csv
+# pyenv
+.python-version
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pip
+#   files in version control.
+#Pipfile
+#Pipfile.lock
+# poetry
+.poetry
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow

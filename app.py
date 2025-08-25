@@ -25,94 +25,13 @@ Bu uygulama ile:
 - Google Maps'ten yeni veri kazıyabilirsiniz
 """)
 
-# Sidebar for WhatsApp controls
-st.sidebar.header("📱 WhatsApp Ayarları")
+# Phone number input in sidebar
+st.sidebar.header("WhatsApp Ayarları")
 user_phone = st.sidebar.text_input(
     "Telefon Numaranız (+90 ile başlayın):", 
     placeholder="+905551234567",
     help="WhatsApp mesajları göndermek için telefon numaranızı girin"
 )
-
-st.sidebar.markdown("---")
-st.sidebar.header("✍️ Mesaj Ayarları")
-message = st.sidebar.text_area(
-    "Gönderilecek Mesaj:",
-    placeholder="Merhaba! İşletmeniz için...",
-    height=100,
-    help="Tüm işletmelere gönderilecek mesajı yazın"
-)
-
-# Message sending delay
-delay_seconds = st.sidebar.slider(
-    "Mesajlar Arası Bekleme (saniye):",
-    min_value=1,
-    max_value=10,
-    value=3,
-    help="Toplu gönderimde mesajlar arasındaki bekleme süresi"
-)
-
-st.sidebar.markdown("---")
-st.sidebar.header("🚀 Mesaj Gönder")
-
-# Store current data in session state
-if 'current_data' not in st.session_state:
-    st.session_state.current_data = None
-
-if st.session_state.current_data is not None and message and user_phone:
-    df_current = st.session_state.current_data
-    
-    # Count valid numbers
-    valid_phones = []
-    if "phone" in df_current.columns:
-        for idx, row in df_current.iterrows():
-            phone = str(row["phone"]).replace(" ", "")
-            if phone and phone != "nan" and is_valid_turkish_mobile(phone):
-                valid_phones.append({"name": row.get('name', 'İşletme'), "phone": phone, "idx": idx})
-    
-    if valid_phones:
-        st.sidebar.success(f"📱 {len(valid_phones)} geçerli numara")
-        
-        if st.sidebar.button("🚀 Tümüne Gönder", type="primary", use_container_width=True):
-            progress_bar = st.sidebar.progress(0)
-            status_text = st.sidebar.empty()
-            
-            success_count = 0
-            total_count = len(valid_phones)
-            
-            for i, item in enumerate(valid_phones):
-                try:
-                    status_text.text(f"Gönderiliyor: {item['name']}")
-                    send_whatsapp_message(user_phone, item['phone'], message)
-                    success_count += 1
-                    progress_bar.progress((i + 1) / total_count)
-                    if i < total_count - 1:  # Don't wait after last message
-                        time.sleep(delay_seconds)
-                except Exception as e:
-                    st.sidebar.error(f"Hata: {item['name']} - {str(e)[:50]}...")
-            
-            status_text.text("Tamamlandı!")
-            st.sidebar.success(f"✅ {success_count}/{total_count} mesaj gönderildi!")
-        
-        # Individual send buttons
-        st.sidebar.markdown("**Tek tek gönder:**")
-        for item in valid_phones[:5]:  # Show first 5
-            if st.sidebar.button(f"📱 {item['name'][:20]}...", key=f"send_{item['idx']}"):
-                try:
-                    send_whatsapp_message(user_phone, item['phone'], message)
-                    st.sidebar.success(f"✅ {item['name']} - Gönderildi!")
-                except Exception as e:
-                    st.sidebar.error(f"❌ Hata: {str(e)[:30]}...")
-        
-        if len(valid_phones) > 5:
-            st.sidebar.info(f"... ve {len(valid_phones) - 5} numara daha")
-    else:
-        st.sidebar.warning("⚠️ Geçerli numara yok")
-elif not user_phone:
-    st.sidebar.warning("⚠️ Telefon numaranızı girin")
-elif not message:
-    st.sidebar.warning("⚠️ Mesajınızı yazın")
-else:
-    st.sidebar.info("📄 Önce veri seçin veya kazıyın")
 
 tab1, tab2 = st.tabs(["CSV Seç", "Google Maps'ten Kazı"])
 
@@ -125,27 +44,42 @@ with tab1:
     if csv_files:
         selected_csv = st.selectbox("Bir CSV dosyası seçin", csv_files)
         df = pd.read_csv(os.path.join(csv_dir, selected_csv))
-        st.session_state.current_data = df  # Store in session state
         st.dataframe(df)
-        # Show valid mobile numbers
-        if "phone" in df.columns:
-            valid_phones = []
-            for idx, row in df.iterrows():
-                phone = str(row["phone"]).replace(" ", "")
-                if phone and phone != "nan" and is_valid_turkish_mobile(phone):
-                    valid_phones.append({"name": row.get('name', 'İşletme'), "phone": phone})
-            
-            if valid_phones:
-                st.success(f"📱 {len(valid_phones)} geçerli cep telefonu numarası bulundu")
+        st.markdown("### WhatsApp Mesajı Gönder")
+        message = st.text_area("WhatsApp ile göndermek istediğiniz mesajı yazın:", key="wa_msg1")
+        
+        if message and user_phone:
+            if "phone" in df.columns:
+                send_col1, send_col2 = st.columns([1, 3])
+                with send_col1:
+                    if st.button("Tüm İşletmelere Gönder", type="primary"):
+                        success_count = 0
+                        for idx, row in df.iterrows():
+                            phone = str(row["phone"]).replace(" ", "")
+                            if phone and phone != "nan" and is_valid_turkish_mobile(phone):
+                                try:
+                                    send_whatsapp_message(user_phone, phone, message)
+                                    success_count += 1
+                                    time.sleep(2)  # Wait between messages
+                                except Exception as e:
+                                    st.error(f"Hata: {e}")
+                        st.success(f"{success_count} işletmeye mesaj gönderildi!")
                 
-                # Show valid numbers in expandable section
-                with st.expander(f"Geçerli Numaraları Gör ({len(valid_phones)} adet)"):
-                    for item in valid_phones:
-                        st.write(f"• {item['name']} - {item['phone']}")
+                with send_col2:
+                    st.markdown("**Veya tek tek gönder:**")
+                    valid_count = 0
+                    for idx, row in df.iterrows():
+                        phone = str(row["phone"]).replace(" ", "")
+                        if phone and phone != "nan" and is_valid_turkish_mobile(phone):
+                            wa_url = f"https://wa.me/+90{phone[1:]}?text={urllib.parse.quote(message)}"
+                            st.markdown(f"📱 [{row.get('name', 'İşletme')} - {phone}]({wa_url})")
+                            valid_count += 1
+                    if valid_count == 0:
+                        st.warning("05 ile başlayan geçerli cep telefonu numarası bulunamadı.")
             else:
-                st.warning("⚠️ 05 ile başlayan geçerli cep telefonu numarası bulunamadı.")
-        else:
-            st.warning("CSV dosyasında 'phone' sütunu bulunamadı.")
+                st.warning("CSV dosyasında 'phone' sütunu bulunamadı.")
+        elif not user_phone:
+            st.warning("Lütfen sol menüden telefon numaranızı girin.")
     else:
         st.info("'csv_files' klasöründe CSV dosyası bulunamadı. Yeni veri kazıyın veya dosyaları bu klasöre ekleyin.")
 
@@ -169,28 +103,43 @@ with tab2:
                     businesses = scraper.scrape_businesses(country, query_type, max_results)
                     if businesses:
                         df2 = pd.DataFrame(businesses)
-                        st.session_state.current_data = df2  # Store in session state
                         st.success(f"{len(df2)} işletme kazındı.")
                         st.dataframe(df2)
-                        # Show valid mobile numbers for scraped data
-                        if "phone" in df2.columns:
-                            valid_phones = []
-                            for idx, row in df2.iterrows():
-                                phone = str(row["phone"]).replace(" ", "")
-                                if phone and phone != "nan" and is_valid_turkish_mobile(phone):
-                                    valid_phones.append({"name": row.get('name', 'İşletme'), "phone": phone})
-                            
-                            if valid_phones:
-                                st.success(f"📱 {len(valid_phones)} geçerli cep telefonu numarası bulundu")
+                        st.markdown("### WhatsApp Mesajı Gönder")
+                        message2 = st.text_area("WhatsApp ile göndermek istediğiniz mesajı yazın:", key="wa_msg2")
+                        
+                        if message2 and user_phone:
+                            if "phone" in df2.columns:
+                                send_col1, send_col2 = st.columns([1, 3])
+                                with send_col1:
+                                    if st.button("Tüm İşletmelere Gönder", type="primary", key="send_all_2"):
+                                        success_count = 0
+                                        for idx, row in df2.iterrows():
+                                            phone = str(row["phone"]).replace(" ", "")
+                                            if phone and phone != "nan" and is_valid_turkish_mobile(phone):
+                                                try:
+                                                    send_whatsapp_message(user_phone, phone, message2)
+                                                    success_count += 1
+                                                    time.sleep(2)  # Wait between messages
+                                                except Exception as e:
+                                                    st.error(f"Hata: {e}")
+                                        st.success(f"{success_count} işletmeye mesaj gönderildi!")
                                 
-                                # Show valid numbers in expandable section
-                                with st.expander(f"Geçerli Numaraları Gör ({len(valid_phones)} adet)"):
-                                    for item in valid_phones:
-                                        st.write(f"• {item['name']} - {item['phone']}")
+                                with send_col2:
+                                    st.markdown("**Veya tek tek gönder:**")
+                                    valid_count = 0
+                                    for idx, row in df2.iterrows():
+                                        phone = str(row["phone"]).replace(" ", "")
+                                        if phone and phone != "nan" and is_valid_turkish_mobile(phone):
+                                            wa_url = f"https://wa.me/+90{phone[1:]}?text={urllib.parse.quote(message2)}"
+                                            st.markdown(f"📱 [{row.get('name', 'İşletme')} - {phone}]({wa_url})")
+                                            valid_count += 1
+                                    if valid_count == 0:
+                                        st.warning("05 ile başlayan geçerli cep telefonu numarası bulunamadı.")
                             else:
-                                st.warning("⚠️ 05 ile başlayan geçerli cep telefonu numarası bulunamadı.")
-                        else:
-                            st.warning("Sonuçlarda 'phone' sütunu bulunamadı.")
+                                st.warning("Sonuçlarda 'phone' sütunu bulunamadı.")
+                        elif not user_phone:
+                            st.warning("Lütfen sol menüden telefon numaranızı girin.")
                         
                         # Option to download CSV and save to csv_files dir
                         csv = df2.to_csv(index=False).encode('utf-8')
