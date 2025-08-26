@@ -1,6 +1,7 @@
 import streamlit as st
 from components.sidebar import show_sidebar
 from modules_csv_viewer import show_csv_viewer
+from modules_csv_upload import show_csv_upload
 from modules_messaging import show_messaging_page
 from modules_scraper_page import show_scraper_page
 
@@ -65,13 +66,16 @@ st.markdown("""
 show_sidebar()
 
 # Main navigation
-tab1, tab2, tab3 = st.tabs(["📊 CSV Görüntüleyici", "💬 Mesajlaşma", "🔍 Google Maps Kazıyıcı"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 CSV Görüntüleyici", "📤 CSV Yükle", "💬 Mesajlaşma", "🔍 Google Maps Kazıyıcı"])
 
 with tab1:
     show_csv_viewer()
 
 with tab2:
-    show_messaging_page()
+    show_csv_upload()
 
 with tab3:
+    show_messaging_page()
+
+with tab4:
     show_scraper_page()
