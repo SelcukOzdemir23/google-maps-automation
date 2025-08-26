@@ -134,17 +134,31 @@ def _show_phone_input_step():
     with col1:
         phone_input = st.text_input(
             "WhatsApp telefon numaranızı girin:",
-            placeholder="+905551234567",
-            help="Mesajları göndermek için kullanılacak telefon numaranız",
-            value=st.session_state.get('user_phone', '')
+            placeholder="5349128082 veya 534 912 8082",
+            help="10 haneli cep telefonu numaranızı girin (+90 otomatik eklenecek)",
+            value=st.session_state.get('user_phone', '').replace('+90', '') if st.session_state.get('user_phone', '').startswith('+90') else st.session_state.get('user_phone', '')
         )
         
         if phone_input:
-            if phone_input.startswith('+90') and len(phone_input) == 13:
-                st.success(f"✅ Geçerli numara: **{phone_input}**")
+            # Clean and format phone number
+            clean_phone = phone_input.replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
+            
+            # Remove +90 if user entered it
+            if clean_phone.startswith('+90'):
+                clean_phone = clean_phone[3:]
+            elif clean_phone.startswith('90'):
+                clean_phone = clean_phone[2:]
+            
+            # Check if valid 10-digit mobile number starting with 5
+            if len(clean_phone) == 10 and clean_phone.startswith('5') and clean_phone.isdigit():
+                formatted_phone = f"+90{clean_phone}"
+                st.success(f"✅ Geçerli numara: **{formatted_phone}**")
                 valid_phone = True
+                # Update session state with formatted number
+                st.session_state.user_phone = formatted_phone
             else:
-                st.error("❌ Geçersiz format! Örnek: +905551234567")
+                st.error("❌ Geçersiz format! 10 haneli cep telefonu numarası girin (5 ile başlamalı)")
+                st.info("💡 Örnek: 5349128082 veya 534 912 8082")
                 valid_phone = False
         else:
             valid_phone = False
@@ -161,7 +175,7 @@ def _show_phone_input_step():
         with col_next:
             if st.button("➡️ Devam Et", type="primary", use_container_width=True):
                 if valid_phone:
-                    st.session_state.user_phone = phone_input
+                    # Phone is already formatted and stored in session state
                     st.session_state.messaging_step = 3
                     st.rerun()
                 else:

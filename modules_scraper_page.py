@@ -376,3 +376,13 @@ def _save_csv_file(df, country, query_type, csv_dir, logs, log_area):
     log_area.text_area("Loglar:", "\n".join(logs), height=200)
     
     st.info(f"Sonuçlar ayrıca {out_path} konumuna kaydedildi")
+    
+    # Auto-refresh messaging page cache
+    if 'messaging_step' in st.session_state:
+        st.session_state.messaging_step = 1
+    if 'selected_csv' in st.session_state:
+        st.session_state.selected_csv = None
+    
+    # Show quick navigation to messaging
+    st.success("🚀 CSV kaydedildi! Mesaj göndermek için 'Mesajlaşma' sekmesine geçin.")
+    st.balloons()
