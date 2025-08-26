@@ -21,32 +21,8 @@ def show_sidebar():
         ✅ **Türk Cep Telefonu** - 05 ile başlayan numaralar  
         """)
 
-    st.sidebar.markdown("---")
-
-    # Navigation
-    st.sidebar.markdown("### 🧭 Navigasyon")
-    page_options = {
-        "📊 CSV Seç": "CSV Seç",
-        "🔍 Google Maps Kazı": "Google Maps Kazı", 
-        "📱 Mesaj Gönder": "Mesaj Gönder"
-    }
-
-    # Initialize session state
-    if 'current_page' not in st.session_state:
-        st.session_state.current_page = "CSV Seç"
-
-    selected_page = st.sidebar.radio(
-        "Sayfa Seçin:",
-        list(page_options.keys()),
-        index=list(page_options.values()).index(st.session_state.current_page)
-    )
-
-    st.session_state.current_page = page_options[selected_page]
-
     # CSV files info
     _show_csv_info()
-    
-    return st.session_state.current_page
 
 def _show_csv_info():
     """Show CSV files information in sidebar"""
@@ -56,7 +32,6 @@ def _show_csv_info():
     
     csv_files = [f for f in os.listdir(csv_dir) if f.endswith('.csv')]
 
-    st.sidebar.markdown("---")
     st.sidebar.markdown("### 📁 CSV Dosyaları")
     
     if csv_files:

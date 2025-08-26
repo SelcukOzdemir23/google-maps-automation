@@ -1,5 +1,4 @@
 # Lazy import to avoid X11 issues on startup
-# pywhatkit will be imported only when needed
 
 def is_valid_turkish_mobile(phone):
     """
@@ -29,6 +28,9 @@ def send_whatsapp_message(sender_phone, recipient_phone, message):
         recipient_phone (str): Recipient's phone number
         message (str): Message to send
     """
+    # Lazy import pywhatkit to avoid X11 issues on startup
+    import pywhatkit
+    
     # Validate Turkish mobile number
     if not is_valid_turkish_mobile(recipient_phone):
         raise Exception(f"Geçersiz numara: {recipient_phone} - Sadece 05 ile başlayan Türk cep telefonu numaralarına mesaj gönderilebilir")
