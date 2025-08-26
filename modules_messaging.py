@@ -98,8 +98,15 @@ def _show_csv_selection_step():
         )
         
         if selected_csv:
-            # Preview CSV data
-            df = pd.read_csv(os.path.join(csv_dir, selected_csv))
+            # Preview CSV data with proper separator detection
+            file_path = os.path.join(csv_dir, selected_csv)
+            try:
+                df = pd.read_csv(file_path, dtype={'phone': str})
+                # Check if semicolon separated
+                if len(df.columns) == 1 and ';' in df.columns[0]:
+                    df = pd.read_csv(file_path, dtype={'phone': str}, sep=';')
+            except:
+                df = pd.read_csv(file_path, dtype={'phone': str}, sep=';')
             valid_phones = _get_valid_phones(df)
             
             st.success(f"✅ **{selected_csv}** seçildi")
@@ -253,9 +260,16 @@ def _show_send_messages_step():
     """Step 4: Send messages"""
     st.markdown("### 🚀 Adım 4: Mesajları Gönder")
     
-    # Load data
+    # Load data with proper separator detection
     csv_dir = os.path.join(os.getcwd(), "csv_files")
-    df = pd.read_csv(os.path.join(csv_dir, st.session_state.selected_csv))
+    file_path = os.path.join(csv_dir, st.session_state.selected_csv)
+    try:
+        df = pd.read_csv(file_path, dtype={'phone': str})
+        # Check if semicolon separated
+        if len(df.columns) == 1 and ';' in df.columns[0]:
+            df = pd.read_csv(file_path, dtype={'phone': str}, sep=';')
+    except:
+        df = pd.read_csv(file_path, dtype={'phone': str}, sep=';')
     valid_phones = _get_valid_phones(df)
     
     # Summary card

@@ -13,7 +13,16 @@ def show_csv_viewer():
     
     if csv_files:
         selected_csv = st.selectbox("Bir CSV dosyası seçin", csv_files)
-        df = pd.read_csv(os.path.join(csv_dir, selected_csv))
+        
+        # Read CSV with proper separator detection
+        file_path = os.path.join(csv_dir, selected_csv)
+        try:
+            df = pd.read_csv(file_path, dtype={'phone': str})
+            # Check if semicolon separated
+            if len(df.columns) == 1 and ';' in df.columns[0]:
+                df = pd.read_csv(file_path, dtype={'phone': str}, sep=';')
+        except:
+            df = pd.read_csv(file_path, dtype={'phone': str}, sep=';')
         st.dataframe(df)
         
         # Show valid mobile numbers

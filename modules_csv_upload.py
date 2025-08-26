@@ -22,14 +22,12 @@ def show_csv_upload():
         
         **İsteğe Bağlı Sütunlar:**
         - `address` - Adres bilgisi
-        - `category` - Kategori
-        - `website` - Web sitesi
         
         **Örnek CSV İçeriği:**
         ```
-        name,phone,address,category
-        Ahmet's Cafe,05551234567,Antalya Merkez,Kafe
-        Mehmet Restaurant,05559876543,İstanbul Kadıköy,Restoran
+        name,phone,address
+        Ahmet Cafe,05551234567,Antalya Merkez
+        Mehmet Restaurant,05559876543,Istanbul Kadikoy
         ```
         """)
     
@@ -45,8 +43,36 @@ def show_csv_upload():
         
         if uploaded_file is not None:
             try:
-                # Read CSV
-                df = pd.read_csv(uploaded_file)
+                # Try different encodings for CSV reading
+                encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+                df = None
+                
+                for encoding in encodings:
+                    try:
+                        uploaded_file.seek(0)  # Reset file pointer
+                        # Try different separators (comma and semicolon)
+                        try:
+                            df = pd.read_csv(uploaded_file, dtype={'phone': str}, encoding=encoding, sep=',')
+                            # Check if we got proper columns
+                            if len(df.columns) == 1 and ';' in df.columns[0]:
+                                uploaded_file.seek(0)
+                                df = pd.read_csv(uploaded_file, dtype={'phone': str}, encoding=encoding, sep=';')
+                        except:
+                            uploaded_file.seek(0)
+                            df = pd.read_csv(uploaded_file, dtype={'phone': str}, encoding=encoding, sep=';')
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                
+                if df is None:
+                    st.error("❌ Dosya kodlaması okunamadı. Lütfen dosyayı UTF-8 olarak kaydedin.")
+                    return
+                
+                # Clean column names (remove quotes and whitespace)
+                df.columns = df.columns.str.strip().str.replace('"', '').str.replace("'", '')
+                
+                # Debug: Show actual column names
+                st.info(f"🔍 Bulunan sütunlar: {list(df.columns)}")
                 
                 # Validate required columns
                 required_columns = ['name', 'phone']
@@ -55,6 +81,7 @@ def show_csv_upload():
                 if missing_columns:
                     st.error(f"❌ Eksik sütunlar: {', '.join(missing_columns)}")
                     st.info("CSV dosyanızda 'name' ve 'phone' sütunları bulunmalıdır.")
+                    st.info(f"🔍 Mevcut sütunlar: {list(df.columns)}")
                     return
                 
                 # Show preview
@@ -80,36 +107,42 @@ def show_csv_upload():
                 
             except Exception as e:
                 st.error(f"❌ CSV okuma hatası: {str(e)}")
-                st.info("Dosyanızın UTF-8 kodlamasında ve doğru CSV formatında olduğundan emin olun.")
+                st.info("📝 **Çözüm:** Excel'de 'Farklı Kaydet' > 'CSV UTF-8 (Virgülle ayrılmış)' seçin")
+                st.info("🔄 Veya Notepad++ ile açıp UTF-8 olarak kaydedin")
     
     with col2:
-        # Sample CSV download
-        st.markdown("### 📥 Örnek CSV İndir")
+        # Sample Excel download
+        st.markdown("### 📥 Örnek Excel İndir")
+        # Create Excel sample
         sample_data = {
-            'name': ['Ahmet Cafe', 'Mehmet Restaurant', 'Ayşe Kuaför'],
-            'phone': ['05551234567', '05559876543', '05557654321'],
-            'address': ['Antalya Merkez', 'İstanbul Kadıköy', 'Ankara Çankaya'],
-            'category': ['Kafe', 'Restoran', 'Kuaför']
+            'name': ['Ahmet Cafe', 'Mehmet Restaurant', 'Ayşe Kuaför', 'Ali Market'],
+            'phone': ['05551234567', '05559876543', '05557654321', '05554443322'],
+            'address': ['Antalya Merkez', 'İstanbul Kadıköy', 'Ankara Çankaya', 'İzmir Konak']
         }
         sample_df = pd.DataFrame(sample_data)
-        csv_sample = sample_df.to_csv(index=False).encode('utf-8')
+        
+        from io import BytesIO
+        excel_buffer = BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            sample_df.to_excel(writer, index=False, sheet_name='Veriler')
+        excel_data = excel_buffer.getvalue()
         
         st.download_button(
-            "📄 Örnek CSV İndir",
-            csv_sample,
-            "ornek_csv.csv",
-            "text/csv",
+            "📊 Örnek Excel İndir",
+            excel_data,
+            "ornek_veriler.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
-            help="Bu örnek dosyayı indirip kendi verilerinizle doldurun"
+            help="Excel'i indirin, doldurun, CSV olarak kaydedin"
         )
         
         # Tips
         st.markdown("### 💡 İpuçları")
         st.markdown("""
-        - Excel'den CSV olarak kaydedin
-        - Türkçe karakterler için UTF-8 kullanın
-        - Telefon numaraları 05 ile başlamalı
-        - Virgül ayırıcı kullanın
+        - Örnek Excel'i indirin
+        - Kendi verilerinizi girin
+        - "Farklı Kaydet" > CSV seçin
+        - Telefon: 05XXXXXXXXX formatı
         """)
 
 def _get_valid_phones(df):
@@ -172,8 +205,12 @@ def _save_csv_file(df, filename, valid_phones):
         clean_filename = filename.replace('.csv', '') + '.csv'
         file_path = os.path.join(csv_dir, clean_filename)
         
-        # Save the file
-        df.to_csv(file_path, index=False, encoding='utf-8')
+        # Save the file with phone numbers as strings
+        # Ensure phone column is saved as string with quotes
+        df_copy = df.copy()
+        if 'phone' in df_copy.columns:
+            df_copy['phone'] = df_copy['phone'].astype(str)
+        df_copy.to_csv(file_path, index=False, encoding='utf-8', quoting=1)
         
         st.success(f"✅ Dosya başarıyla kaydedildi: `{clean_filename}`")
         st.info(f"📁 Konum: `csv_files/{clean_filename}`")
